@@ -3,7 +3,6 @@ import { MapContainer, Marker, TileLayer } from "react-leaflet";
 
 const origin = [37.40599, -122.07851]
 let [latitude, longitude] = origin;
-latitude -= 0.006
 const position = [latitude, longitude] as L.LatLngExpression
 const positionMarker = origin as L.LatLngExpression
 

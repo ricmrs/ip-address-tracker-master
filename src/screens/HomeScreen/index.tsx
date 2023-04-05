@@ -7,21 +7,40 @@ import { StyleSheet } from "@/theme/StyleSheet";
 import { useTheme } from "@/theme/ThemeProvider";
 import Head from "next/head";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { loadIP } from "@/lib";
+import { IConnection } from "@/interfaces/IConnection";
+import useBreakpoints from "@/utils/mediaQueries/useBreakpoints";
+import { validateIPInput } from "./utils/validateIPInput";
 
 const Map = dynamic(() => import("@/components/Map"), {
   ssr: false,
 });
 
-export default function HomeScreen({ ip, location, timezone, isp }: { ip: string, location: string, timezone: string, isp: string }) {
+export default function HomeScreen({ connection } : { connection: IConnection} ) {
   const theme = useTheme();
+  const [currentConnection, setCurrentConnection] = useState(connection);
   const [inputValue, setInputValue] = useState('');
+  const { isLg } = useBreakpoints();
+  const inputRef = useRef();
+  const [inputValidity, setInputValidity] = useState(true)
 
   async function submitInputValue(){
-    const ip = await loadIP(inputValue)
-    console.log('ip', ip)
-    setInputValue('');
+    if(validateIPInput(inputValue, inputRef)) {
+      const connection = await loadIP(inputValue)
+      setCurrentConnection(connection)
+      setInputValidity(true)
+      setInputValue('')
+      return
+    }
+    setInputValidity(false)
+    setInputValue('')
+  }
+
+  function handleEnterDown(event: React.KeyboardEvent<HTMLInputElement>){
+    if(event.key === 'Enter') {
+      submitInputValue();
+    }
   }
 
   const headingStyles = {
@@ -30,7 +49,10 @@ export default function HomeScreen({ ip, location, timezone, isp }: { ip: string
   }
   const infoStyles = {
     gap: '10px',
-    alignItems: 'center'
+    alignItems: { xs: 'center', lg: 'flex-start' },
+    width: { xs: 'auto', lg: '210px' },
+    height: { xs: 'auto', lg: '75px' },
+    borderRight: { xs: 'none', lg: `1px solid ${theme.colors.neutral.x200}` }
   }
 
   return (
@@ -41,10 +63,9 @@ export default function HomeScreen({ ip, location, timezone, isp }: { ip: string
       <Box
         tag="main"
         styleSheet={{
-          backgroundImage: { xs: 'url("./assets/pattern-bg-mobile.png")' },
-          backgroundSize: 'cover',
+          backgroundImage: { xs: 'url("./assets/pattern-bg-mobile.png")', lg: 'url("./assets/pattern-bg-desktop.png")' },
+          backgroundSize: 'contain',
           backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
           flex: 1,
           alignItems: 'center',
           height: '50%',
@@ -55,11 +76,16 @@ export default function HomeScreen({ ip, location, timezone, isp }: { ip: string
         }}
       >
         <Text tag="h1" variant="heading1" styleSheet={{ color: theme.colors.neutral.x000 }}>IP Address Tracker</Text>
-        <Box styleSheet={{ gap: '40px', zIndex: '1' }}>
+        <Box 
+          styleSheet={{ gap: '40px', zIndex: '1', alignItems: 'center' }}>
           <InputGroup
             value={inputValue}
-            onChange={(event) => setInputValue(event.target.value)}
+            ref={inputRef}
+            inputValidity={inputValidity}
+            placeholder={`${isLg ? 'Search for any IP address or domain' : 'Search for any IP address'}`}
+            onChange={event => setInputValue(event.target.value)}
             onClick={submitInputValue}
+            onEnterPressed={handleEnterDown}
             buttonStyle={{
               backgroundColor: theme.colors.neutral.x999,
               alignItems: 'center',
@@ -70,7 +96,7 @@ export default function HomeScreen({ ip, location, timezone, isp }: { ip: string
                 backgroundColor: theme.colors.neutral.x500
               },
               focus: {
-                backgroundColor: theme.colors.neutral.x999
+                backgroundColor: theme.colors.neutral.x999,
               }
             }}
             inputStyle={{
@@ -78,23 +104,28 @@ export default function HomeScreen({ ip, location, timezone, isp }: { ip: string
               borderTopLeftRadius: '15px',
               borderBottomLeftRadius: '15px',
               paddingHorizontal: '20px',
-              paddingVertical: '15px'
+              paddingVertical: '15px',
+              cursor: 'pointer',
+              focus: {
+                border: `3px solid ${theme.colors.neutral.x999}`,
+              }
             }}
           >
             <Icon name="arrow" viewBox="-8 -4 24 24" />
           </InputGroup>
           <Box styleSheet={{
             backgroundColor: theme.colors.neutral.x000,
-            alignItems: 'center',
             paddingVertical: '30px',
-            paddingHorizontal: '50px',
-            borderRadius: '5%',
-            gap: '25px'
+            paddingHorizontal: { xs: '50px', lg: '40px' },
+            gap: { xs: '25px', lg: '15px' },
+            alignItems: { xs: 'center', lg: 'flex-start' },
+            borderRadius: { xs: '5%', lg: '20px' },
+            flexDirection: { xs: 'column', lg: 'row' }
           }}>
-            <Info title="IP Address" info={ip} headingStyles={headingStyles} styleSheet={infoStyles} />
-            <Info title="Location" info={location} headingStyles={headingStyles} styleSheet={infoStyles} />
-            <Info title="Timezone" info={timezone} headingStyles={headingStyles} styleSheet={infoStyles} />
-            <Info title="ISP" info={isp} headingStyles={headingStyles} styleSheet={infoStyles} />
+            <Info title="IP Address" info={currentConnection.ip} headingStyles={headingStyles} styleSheet={infoStyles} />
+            <Info title="Location" info={currentConnection.location} headingStyles={headingStyles} styleSheet={infoStyles} />
+            <Info title="Timezone" info={currentConnection.timezone} headingStyles={headingStyles} styleSheet={infoStyles} />
+            <Info title="ISP" info={currentConnection.isp} headingStyles={headingStyles} styleSheet={{...infoStyles, borderRight: 'none'}} />
           </Box>
         </Box>
         <Box
@@ -102,8 +133,8 @@ export default function HomeScreen({ ip, location, timezone, isp }: { ip: string
             height: '100%',
             width: '100%',
             position: 'absolute',
-            top: '38%',
-            zIndex: '0'
+            zIndex: '0',
+            top: { xs: '36%', lg: '21%', xl: '25%' },
           }}>
           <Map />
         </Box>

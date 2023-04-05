@@ -41,7 +41,7 @@ export const typography = {
       },
       fontSize: {
         xs: '20px',
-        md: '36px',
+        md: '24px',
       },
     },
     heading3: {
@@ -55,7 +55,7 @@ export const typography = {
       },
       fontSize: {
         xs: '20px',
-        md: '30px',
+        md: '24px',
       },
     },
     heading4: {
@@ -72,7 +72,7 @@ export const typography = {
       },
       fontSize: {
         xs: '12px',
-        md: '20px',
+        md: '14px',
       },
     },
     heading5: {

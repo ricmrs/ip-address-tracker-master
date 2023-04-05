@@ -1,11 +1,12 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import { IConnection } from '@/interfaces/IConnection'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 export default function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse<IConnection>
 ) {
-  const { ip } = req.query
+  const { ip } = Array.isArray(req.query) ? req.query[0] : req.query
 
   res.status(200).json({
     ip: ip,
