@@ -1,10 +1,16 @@
 import L from "leaflet";
-import { MapContainer, Marker, TileLayer } from "react-leaflet";
+import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 
 const myIcon = L.icon({
   iconUrl: '/assets/icon-location.svg',
   iconSize: [42, 50],
 });
+
+function UpdateMapCenter(props: {mapCenter: L.LatLngExpression}) {
+  const map = useMap();
+  map.panTo(props.mapCenter);
+  return null;
+}
 
 export default function Map({ position }: {position: L.LatLngExpression}) {
   return (
@@ -17,6 +23,7 @@ export default function Map({ position }: {position: L.LatLngExpression}) {
       dragging={false}
       doubleClickZoom={false}
     >
+      <UpdateMapCenter mapCenter={position}/>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

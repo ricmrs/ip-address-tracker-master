@@ -136,7 +136,7 @@ export default function HomeScreen({ connection } : { connection: IConnection} )
             zIndex: '0',
             top: { xs: '36%', lg: '21%', xl: '25%' },
           }}>
-          <Map position={[connection.location?.lat, connection.location?.lng]}/>
+          <Map position={[currentConnection.location?.lat, currentConnection.location?.lng]}/>
         </Box>
       </Box>
     </>
