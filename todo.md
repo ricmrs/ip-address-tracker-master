@@ -1,4 +1,4 @@
 **TODO**
 - [x] validate IP input value
-- [] change map by ip
-- [] request geofy api
+- [x] change map by ip
+- [x] request geoipify api

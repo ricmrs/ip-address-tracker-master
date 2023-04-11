@@ -8,7 +8,7 @@ import { useTheme } from "@/theme/ThemeProvider";
 import Head from "next/head";
 import dynamic from "next/dynamic";
 import { useRef, useState } from "react";
-import { loadIP } from "@/lib";
+import { loadGeoIP } from "@/lib";
 import { IConnection } from "@/interfaces/IConnection";
 import useBreakpoints from "@/utils/mediaQueries/useBreakpoints";
 import { validateIPInput } from "./utils/validateIPInput";
@@ -27,7 +27,7 @@ export default function HomeScreen({ connection } : { connection: IConnection} )
 
   async function submitInputValue(){
     if(validateIPInput(inputValue, inputRef)) {
-      const connection = await loadIP(inputValue)
+      const connection = await loadGeoIP(inputValue)
       setCurrentConnection(connection)
       setInputValidity(true)
       setInputValue('')
@@ -123,8 +123,8 @@ export default function HomeScreen({ connection } : { connection: IConnection} )
             flexDirection: { xs: 'column', lg: 'row' }
           }}>
             <Info title="IP Address" info={currentConnection.ip} headingStyles={headingStyles} styleSheet={infoStyles} />
-            <Info title="Location" info={currentConnection.location} headingStyles={headingStyles} styleSheet={infoStyles} />
-            <Info title="Timezone" info={currentConnection.timezone} headingStyles={headingStyles} styleSheet={infoStyles} />
+            <Info title="Location" info={`${currentConnection.location?.region}, ${currentConnection.location?.country}`} headingStyles={headingStyles} styleSheet={infoStyles} />
+            <Info title="Timezone" info={`UTC ${currentConnection.location?.timezone}`} headingStyles={headingStyles} styleSheet={infoStyles} />
             <Info title="ISP" info={currentConnection.isp} headingStyles={headingStyles} styleSheet={{...infoStyles, borderRight: 'none'}} />
           </Box>
         </Box>
@@ -136,7 +136,7 @@ export default function HomeScreen({ connection } : { connection: IConnection} )
             zIndex: '0',
             top: { xs: '36%', lg: '21%', xl: '25%' },
           }}>
-          <Map />
+          <Map position={[connection.location?.lat, connection.location?.lng]}/>
         </Box>
       </Box>
     </>
