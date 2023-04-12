@@ -7,8 +7,8 @@ import { StyleSheet } from "@/theme/StyleSheet";
 import { useTheme } from "@/theme/ThemeProvider";
 import Head from "next/head";
 import dynamic from "next/dynamic";
-import { useRef, useState } from "react";
-import { loadGeoIP } from "@/lib";
+import { useEffect, useRef, useState } from "react";
+import { loadGeoIP, loadUserIP } from "@/lib";
 import { IConnection } from "@/interfaces/IConnection";
 import useBreakpoints from "@/utils/mediaQueries/useBreakpoints";
 import { validateIPInput } from "./utils/validateIPInput";
@@ -17,16 +17,24 @@ const Map = dynamic(() => import("@/components/Map"), {
   ssr: false,
 });
 
-export default function HomeScreen({ connection } : { connection: IConnection} ) {
+export default function HomeScreen() {
   const theme = useTheme();
-  const [currentConnection, setCurrentConnection] = useState(connection);
+  const [currentConnection, setCurrentConnection] = useState<IConnection>();
   const [inputValue, setInputValue] = useState('');
   const { isLg } = useBreakpoints();
   const inputRef = useRef();
   const [inputValidity, setInputValidity] = useState(true)
 
-  async function submitInputValue(){
-    if(validateIPInput(inputValue, inputRef)) {
+  useEffect(() => {
+    (async function() {
+      const userIP = await loadUserIP()
+      const connection = await loadGeoIP(userIP.ip)
+      setCurrentConnection(connection)
+    })()
+  }, [])
+
+  async function submitInputValue() {
+    if (validateIPInput(inputValue, inputRef)) {
       const connection = await loadGeoIP(inputValue)
       setCurrentConnection(connection)
       setInputValidity(true)
@@ -37,8 +45,8 @@ export default function HomeScreen({ connection } : { connection: IConnection} )
     setInputValue('')
   }
 
-  function handleEnterDown(event: React.KeyboardEvent<HTMLInputElement>){
-    if(event.key === 'Enter') {
+  function handleEnterDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Enter') {
       submitInputValue();
     }
   }
@@ -76,7 +84,7 @@ export default function HomeScreen({ connection } : { connection: IConnection} )
         }}
       >
         <Text tag="h1" variant="heading1" styleSheet={{ color: theme.colors.neutral.x000 }}>IP Address Tracker</Text>
-        <Box 
+        <Box
           styleSheet={{ gap: '40px', zIndex: '1', alignItems: 'center' }}>
           <InputGroup
             value={inputValue}
@@ -122,10 +130,10 @@ export default function HomeScreen({ connection } : { connection: IConnection} )
             borderRadius: { xs: '5%', lg: '20px' },
             flexDirection: { xs: 'column', lg: 'row' }
           }}>
-            <Info title="IP Address" info={currentConnection.ip} headingStyles={headingStyles} styleSheet={infoStyles} />
-            <Info title="Location" info={`${currentConnection.location?.region}, ${currentConnection.location?.country}`} headingStyles={headingStyles} styleSheet={infoStyles} />
-            <Info title="Timezone" info={`UTC ${currentConnection.location?.timezone}`} headingStyles={headingStyles} styleSheet={infoStyles} />
-            <Info title="ISP" info={currentConnection.isp} headingStyles={headingStyles} styleSheet={{...infoStyles, borderRight: 'none'}} />
+            <Info title="IP Address" info={currentConnection?.ip} headingStyles={headingStyles} styleSheet={infoStyles} />
+            <Info title="Location" info={`${currentConnection?.location?.region}, ${currentConnection?.location?.country}`} headingStyles={headingStyles} styleSheet={infoStyles} />
+            <Info title="Timezone" info={`UTC ${currentConnection?.location?.timezone}`} headingStyles={headingStyles} styleSheet={infoStyles} />
+            <Info title="ISP" info={currentConnection?.isp} headingStyles={headingStyles} styleSheet={{ ...infoStyles, borderRight: 'none' }} />
           </Box>
         </Box>
         <Box
@@ -136,7 +144,7 @@ export default function HomeScreen({ connection } : { connection: IConnection} )
             zIndex: '0',
             top: { xs: '36%', lg: '21%', xl: '25%' },
           }}>
-          <Map position={[currentConnection.location?.lat, currentConnection.location?.lng]}/>
+          <Map position={[currentConnection?.location?.lat || 0, currentConnection?.location?.lng || 0]} />
         </Box>
       </Box>
     </>
@@ -145,7 +153,7 @@ export default function HomeScreen({ connection } : { connection: IConnection} )
 
 interface InfoProps {
   title: string;
-  info: string;
+  info?: string;
   headingStyles: StyleSheet;
   styleSheet?: StyleSheet;
 }
