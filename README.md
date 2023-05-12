@@ -34,7 +34,7 @@ Users should be able to:
 ### Links
 
 - Solution URL: [GitHub Repository](https://github.com/ricmrs/ip-address-tracker-master)
-- Live Site URL: [Space Tourism Website](https://ip-address-tracker-master-weld.vercel.app/)
+- Live Site URL: [IP Address Track Master](https://ip-address-tracker-master-weld.vercel.app/)
 
 ## My process
 
